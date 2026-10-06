@@ -1,0 +1,23 @@
+groups:
+  - name: aegisclick
+    rules:
+      - alert: AegisComponentDown
+        expr: aegis_component_up == 0
+        for: 1m
+        labels: {severity: warning}
+        annotations: {summary: "{{ $labels.component }} is DEGRADED/OFFLINE"}
+      - alert: AegisHighDetectionLatency
+        expr: aegis_detection_latency_ms{quantile="0.95"} > 500
+        for: 2m
+        labels: {severity: warning}
+        annotations: {summary: "p95 detection latency above 500 ms"}
+      - alert: AegisConsumerLag
+        expr: aegis_consumer_lag > 5000
+        for: 2m
+        labels: {severity: critical}
+        annotations: {summary: "Click topic consumer lag above 5000 events"}
+      - alert: AegisModelDrift
+        expr: aegis_score_psi > 0.25 or aegis_feature_psi_max > 0.25
+        for: 5m
+        labels: {severity: warning}
+        annotations: {summary: "Model input/score drift (PSI > 0.25): consider retraining"}

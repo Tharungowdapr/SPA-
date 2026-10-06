@@ -1,0 +1,26 @@
+[project]
+name = "aegisclick"
+version = "1.0.0"
+description = "Adaptive real-time advertisement click-fraud detection platform"
+requires-python = ">=3.11"
+readme = "README.md"
+
+[project.optional-dependencies]
+browser = ["playwright>=1.40"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q -p no:cacheprovider"
+filterwarnings = ["ignore::DeprecationWarning", "ignore::UserWarning"]
+markers = [
+  "browser: Playwright end-to-end tests (needs `playwright install chromium`)",
+]
+
+[tool.ruff]
+line-length = 140
+target-version = "py311"
+extend-exclude = ["data", "models", "reports"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501", "E701", "E702", "E731", "E741", "I001"]

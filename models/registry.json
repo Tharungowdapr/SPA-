@@ -1,0 +1,185 @@
+{
+  "production": "v2",
+  "history": [
+    "v1"
+  ],
+  "versions": {
+    "v1": {
+      "trained_at": 1791017346.5484726,
+      "metrics": {
+        "logreg": {
+          "pr_auc": 0.9562615527485258,
+          "roc_auc": 0.9872873684232781,
+          "f1@0.5": 0.8584121198314159
+        },
+        "mlp": {
+          "pr_auc": 0.9928552521085497,
+          "roc_auc": 0.997992599216794,
+          "f1@0.5": 0.9597206634243671
+        },
+        "hgb": {
+          "pr_auc": 0.9931051219637899,
+          "roc_auc": 0.9978934123727395,
+          "f1@0.5": 0.9642901891993485
+        },
+        "xgb": {
+          "pr_auc": 0.9929791180917625,
+          "roc_auc": 0.997808502796611,
+          "f1@0.5": 0.9635566687539135
+        },
+        "lgbm": {
+          "pr_auc": 0.9931375039194212,
+          "roc_auc": 0.9978874294504944,
+          "f1@0.5": 0.9640935818841486
+        },
+        "ensemble": {
+          "pr_auc": 0.9935288043967614,
+          "roc_auc": 0.998130185287367,
+          "f1@0.5": 0.9634817408704353
+        },
+        "anomaly": {
+          "pr_auc": 0.7692000353194608,
+          "roc_auc": 0.8613048619523493,
+          "f1@0.5": 0.7680306555357876
+        },
+        "_train_rows": 65477
+      },
+      "importance": {
+        "avg_interval": 0.2017554403657038,
+        "clicks_1h": 0.1172896253102826,
+        "interval_std": 0.08084736837291988,
+        "unique_devices_per_ip": 0.06928458704527458,
+        "unique_ips_per_device": 0.06227854034133088,
+        "ua_bot_flag": 0.04775639944238393,
+        "unique_ads_1h": 0.047525493305693556,
+        "ip_clicks_1m": 0.019210346658284472,
+        "campaign_click_share_5m": 0.01825766675016301,
+        "repeat_ad_ratio": 0.018153362418182772,
+        "clicks_5m": 0.017522816944666286,
+        "unique_users_per_device": 0.014366174242731159,
+        "min_interval": 0.014336570017313774,
+        "unique_users_per_ip": 0.008832876611276075,
+        "interval_cv": 0.0075854912720791185,
+        "geo_ip_countries": 0.006759042736943203,
+        "geo_user_countries": 0.0055379132444640655,
+        "clicks_10s": 0.005024311686315304,
+        "burst_score": 0.00489423780535118,
+        "timing_entropy": 0.0024769120772171935,
+        "clicks_1m": 0.001600215850125893,
+        "account_age_days": 0.0013255308191529498,
+        "device_clicks_1m": 0.00043749602529456294
+      },
+      "features": [
+        "clicks_10s",
+        "clicks_1m",
+        "clicks_5m",
+        "clicks_1h",
+        "avg_interval",
+        "min_interval",
+        "interval_std",
+        "interval_cv",
+        "timing_entropy",
+        "burst_score",
+        "unique_ads_1h",
+        "repeat_ad_ratio",
+        "device_clicks_1m",
+        "unique_users_per_device",
+        "unique_ips_per_device",
+        "ip_clicks_1m",
+        "unique_devices_per_ip",
+        "unique_users_per_ip",
+        "campaign_click_share_5m",
+        "geo_user_countries",
+        "geo_ip_countries",
+        "ua_bot_flag",
+        "account_age_days"
+      ]
+    },
+    "v2": {
+      "trained_at": 1791079689.7084525,
+      "metrics": {
+        "logreg": {
+          "pr_auc": 0.9562615527485258,
+          "roc_auc": 0.9872873684232781,
+          "f1@0.5": 0.8584121198314159
+        },
+        "mlp": {
+          "pr_auc": 0.9928552521085497,
+          "roc_auc": 0.997992599216794,
+          "f1@0.5": 0.9597206634243671
+        },
+        "hgb": {
+          "pr_auc": 0.9931107678015922,
+          "roc_auc": 0.9979045678096232,
+          "f1@0.5": 0.9640395940358351
+        },
+        "xgb": {
+          "pr_auc": 0.9929891470559578,
+          "roc_auc": 0.9978346472507098,
+          "f1@0.5": 0.9640395940358351
+        },
+        "ensemble": {
+          "pr_auc": 0.9935317218047275,
+          "roc_auc": 0.9981327926857543,
+          "f1@0.5": 0.963342925059427
+        },
+        "anomaly": {
+          "pr_auc": 0.7692000353194608,
+          "roc_auc": 0.8613048619523493,
+          "f1@0.5": 0.7680306555357876
+        },
+        "_train_rows": 65477
+      },
+      "importance": {
+        "avg_interval": 0.2017554403657038,
+        "clicks_1h": 0.1172896253102826,
+        "interval_std": 0.08084736837291988,
+        "unique_devices_per_ip": 0.06928458704527458,
+        "unique_ips_per_device": 0.06227854034133088,
+        "ua_bot_flag": 0.04775639944238393,
+        "unique_ads_1h": 0.047525493305693556,
+        "ip_clicks_1m": 0.019210346658284472,
+        "campaign_click_share_5m": 0.01825766675016301,
+        "repeat_ad_ratio": 0.018153362418182772,
+        "clicks_5m": 0.017522816944666286,
+        "unique_users_per_device": 0.014366174242731159,
+        "min_interval": 0.014336570017313774,
+        "unique_users_per_ip": 0.008832876611276075,
+        "interval_cv": 0.0075854912720791185,
+        "geo_ip_countries": 0.006759042736943203,
+        "geo_user_countries": 0.0055379132444640655,
+        "clicks_10s": 0.005024311686315304,
+        "burst_score": 0.00489423780535118,
+        "timing_entropy": 0.0024769120772171935,
+        "clicks_1m": 0.001600215850125893,
+        "account_age_days": 0.0013255308191529498,
+        "device_clicks_1m": 0.00043749602529456294
+      },
+      "features": [
+        "clicks_10s",
+        "clicks_1m",
+        "clicks_5m",
+        "clicks_1h",
+        "avg_interval",
+        "min_interval",
+        "interval_std",
+        "interval_cv",
+        "timing_entropy",
+        "burst_score",
+        "unique_ads_1h",
+        "repeat_ad_ratio",
+        "device_clicks_1m",
+        "unique_users_per_device",
+        "unique_ips_per_device",
+        "ip_clicks_1m",
+        "unique_devices_per_ip",
+        "unique_users_per_ip",
+        "campaign_click_share_5m",
+        "geo_user_countries",
+        "geo_ip_countries",
+        "ua_bot_flag",
+        "account_age_days"
+      ]
+    }
+  }
+}

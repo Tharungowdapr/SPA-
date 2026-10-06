@@ -1,0 +1,16 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12", cache: pip}
+      - run: pip install -r requirements-dev.txt -r requirements-optional.txt -r requirements-backends-test.txt
+      - run: ruff check aegis tests scripts
+      - run: python -m pytest --cov=aegis --cov-report=term
+      - run: python -m aegis.training --quick && python scripts/verify.py
+      - run: python -m aegis.evaluation.evaluate --quick
+      - uses: actions/upload-artifact@v4
+        with: {name: reports, path: reports/}

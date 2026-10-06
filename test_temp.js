@@ -1,0 +1,1 @@
+async function test() {  if(b.dataset.x){try{await api(`/api/simulations/${id}/replay?speed=${b.dataset.x}`,{method:'POST'});toast('Replaying #'+id+' at '+b.dataset.x+'x through Kafka-style pipeline');}catch(er){toast(er.message)}}}

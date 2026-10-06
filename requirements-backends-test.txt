@@ -1,0 +1,4 @@
+# Embedded real servers so the Postgres and Redis integration tests can run on a laptop (tests skip if absent).
+# redislite compiles Redis (needs a C compiler + make): Linux/macOS/WSL only.
+pgserver>=0.1.4
+redislite>=6.2

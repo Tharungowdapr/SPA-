@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.env
+.env.local
+*.local
+.secret
+
+# Data & Reports
+data/
+reports/
+*.db*
+*.sqlite
+*.pkl
+
+# Virtual Environment
+.venv/
+venv/
+env/
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Docker
+.dockerignore
+
+# GUI
+*.json.key
+*.pem
+
+# GUI/Simulator state
+*.json.sav
+
+# UVicorn
+server.log
+
+# Cached
+.ruff_cache/

@@ -1,0 +1,1 @@
+function navItem(v){return '<a data-v="'+v[0]+'" tabindex="0" onclick="go("\1")" onkeydown="if(event.key===\'Enter\')go("\1")">'+v[1]+'<kbd>'+v[2]+'</kbd></a>'};

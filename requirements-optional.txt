@@ -1,0 +1,8 @@
+# Optional integrations. The platform runs (with graceful fallback) without any of these.
+shap==0.52.0                # real SHAP explanations + XGBoost TreeSHAP global importance (ml.explain_backend)
+langgraph                   # LangGraph investigation workflow (agent.engine)
+psycopg[binary]>=3.2        # PostgreSQL backend (DATABASE_URL=postgresql://...)
+redis>=5.0                  # shared state / rate limiting (REDIS_URL=redis://...)
+neo4j>=5.0                  # Neo4j graph mirror (NEO4J_URI=bolt://...)
+kafka-python>=2.0.2         # real Kafka transport (KAFKA_BOOTSTRAP=host:9092)
+mlflow>=2.10                # experiment tracking (auto-detected by the registry)

@@ -1,0 +1,367 @@
+{
+ "uid": "aegisclick",
+ "title": "AegisClick - Fraud Platform",
+ "schemaVersion": 39,
+ "version": 1,
+ "refresh": "5s",
+ "time": {
+  "from": "now-15m",
+  "to": "now"
+ },
+ "tags": [
+  "aegisclick"
+ ],
+ "panels": [
+  {
+   "id": 1,
+   "type": "timeseries",
+   "title": "Events / sec",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "aegis-prom"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 0,
+    "w": 8,
+    "h": 7
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "aegis_events_per_second",
+     "legendFormat": "events/s",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "aegis-prom"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "rate(aegis_events_total[1m])",
+     "legendFormat": "rate(1m)",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "aegis-prom"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {},
+    "overrides": []
+   }
+  },
+  {
+   "id": 2,
+   "type": "timeseries",
+   "title": "Fraud ratio (flagged / events)",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "aegis-prom"
+   },
+   "gridPos": {
+    "x": 8,
+    "y": 0,
+    "w": 8,
+    "h": 7
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "rate(aegis_flagged_total[1m]) / clamp_min(rate(aegis_events_total[1m]), 1e-9)",
+     "legendFormat": "flag ratio",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "aegis-prom"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percentunit"
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 3,
+   "type": "timeseries",
+   "title": "Decisions by level (rate)",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "aegis-prom"
+   },
+   "gridPos": {
+    "x": 16,
+    "y": 0,
+    "w": 8,
+    "h": 7
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "rate(aegis_decisions_total[1m])",
+     "legendFormat": "{{level}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "aegis-prom"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {},
+    "overrides": []
+   }
+  },
+  {
+   "id": 4,
+   "type": "timeseries",
+   "title": "Detection latency (ms)",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "aegis-prom"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 7,
+    "w": 8,
+    "h": 7
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "aegis_detection_latency_ms{quantile=~\"0.5|0.95\"}",
+     "legendFormat": "p{{quantile}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "aegis-prom"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "ms"
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 5,
+   "type": "timeseries",
+   "title": "Blocked users / rejected clicks",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "aegis-prom"
+   },
+   "gridPos": {
+    "x": 8,
+    "y": 7,
+    "w": 8,
+    "h": 7
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "aegis_blocked_users",
+     "legendFormat": "blocked users",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "aegis-prom"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "rate(aegis_rejected_total[1m])",
+     "legendFormat": "rejected/s",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "aegis-prom"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {},
+    "overrides": []
+   }
+  },
+  {
+   "id": 6,
+   "type": "timeseries",
+   "title": "Kafka consumer lag",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "aegis-prom"
+   },
+   "gridPos": {
+    "x": 16,
+    "y": 7,
+    "w": 8,
+    "h": 7
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "aegis_consumer_lag",
+     "legendFormat": "lag",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "aegis-prom"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {},
+    "overrides": []
+   }
+  },
+  {
+   "id": 7,
+   "type": "timeseries",
+   "title": "Component health (1 = up)",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "aegis-prom"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 14,
+    "w": 12,
+    "h": 7
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "aegis_component_up",
+     "legendFormat": "{{component}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "aegis-prom"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {},
+    "overrides": []
+   }
+  },
+  {
+   "id": 8,
+   "type": "timeseries",
+   "title": "Precision / recall (simulated ground truth)",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "aegis-prom"
+   },
+   "gridPos": {
+    "x": 12,
+    "y": 14,
+    "w": 12,
+    "h": 7
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "aegis_quality_precision",
+     "legendFormat": "precision",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "aegis-prom"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "aegis_quality_recall",
+     "legendFormat": "recall",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "aegis-prom"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percentunit"
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 9,
+   "type": "timeseries",
+   "title": "Drift (PSI)",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "aegis-prom"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 21,
+    "w": 12,
+    "h": 7
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "aegis_feature_psi_max",
+     "legendFormat": "max feature PSI",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "aegis-prom"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "aegis_score_psi",
+     "legendFormat": "score PSI",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "aegis-prom"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {},
+    "overrides": []
+   }
+  },
+  {
+   "id": 10,
+   "type": "timeseries",
+   "title": "Active users / online updates",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "aegis-prom"
+   },
+   "gridPos": {
+    "x": 12,
+    "y": 21,
+    "w": 12,
+    "h": 7
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "aegis_active_users",
+     "legendFormat": "active users",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "aegis-prom"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "aegis_online_updates_total",
+     "legendFormat": "online updates",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "aegis-prom"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {},
+    "overrides": []
+   }
+  }
+ ]
+}

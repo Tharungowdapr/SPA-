@@ -1,0 +1,82 @@
+# AegisClick central configuration. Override any key with env var AEGIS__SECTION__KEY (e.g. AEGIS__RISK__BLOCK_MIN_HITS=3).
+app:
+  env: development
+  seed: 42
+  db_path: data/aegis.db
+  models_dir: models
+  reports_dir: reports
+  sync_processing: true        # true: process inline after ingest (memory bus). false: background consumer only
+  auto_train: true             # train models at startup if no registry exists
+  seed_users: 60               # simulated ad-network user pool size
+  retention: {days: 7, max_events: 500000, audit_days: 90, keep_simulations: 50, sweep_minutes: 10}   # data retention policy
+  auth_enabled: true
+bus:
+  kafka_bootstrap: ""          # empty => in-memory bus. e.g. localhost:9092
+  buffer: 100000
+  topics:
+    clicks: ad-click-events
+    predictions: fraud-predictions
+    alerts: fraud-alerts
+    blocks: user-block-events
+    model_updates: model-updates
+    system: system-events
+    agent: agent-events
+features:
+  max_window_events: 2000
+  graph_edge_ttl: 900
+  graph_rebuild_every: 200
+rules:
+  max_clicks_per_min: 30
+  min_interval_s: 0.25
+  min_interval_clicks: 5
+  max_users_per_device: 4
+  max_devices_per_ip: 6
+  repeat_ad_ratio: 0.9
+  repeat_ad_min_clicks: 20
+  bot_user_agents: [curl, python-requests, headless, bot, spider, scrapy, selenium, phantomjs, wget]
+  blocked_ips: []
+  weights:
+    high_click_velocity: 0.90
+    tiny_interval: 0.90
+    bot_user_agent: 0.60
+    blocked_ip: 1.00
+    impossible_geo: 0.70
+    device_sharing: 0.80
+    ip_device_fanin: 0.80
+    repeat_ad: 0.70
+risk:
+  weights: {rules: 0.30, ml: 0.45, online: 0.10, anomaly: 0.15}   # scoring layers (renormalised if one is down)
+  graph_boost: 0.6             # graph layer = corroborating evidence (noisy-OR), not averaged
+  levels: {medium: 0.30, high: 0.70, critical: 0.90}
+  hard_rule_floor: 0.75        # a hard rule hit (weight>=1.0) floors risk here
+  block_min_hits: 2            # CRITICAL events needed before auto-block
+  auto_block: true
+ml:
+  ensemble: [mlp, hgb]          # layers averaged into the ML score (any of: mlp, hgb, xgb, lgbm, logreg)
+  optional_models: [xgb, lgbm]  # trained and reported when the libraries are installed
+  explain_backend: auto         # auto: SHAP library if installed else built-in sampled Shapley | shap | shapley
+  mlp: {hidden: [64, 32], max_iter: 300}
+  hgb: {max_iter: 150}
+  drift: {warmup_s: 600, ref_size: 1500, window: 1500}   # PSI: reference window captured after 600 s of traffic; compared with the latest 1500 events
+  online_enabled: true
+  online_learn_confirmed_only: true   # true: learn only from analyst feedback. false: also stage agreed pseudo-labels, committed after 60s
+security:
+  jwt_ttl_minutes: 480
+  pbkdf2_iterations: 120000
+  rate_limit_per_min: 12000
+  login_rate_limit_per_min: 30   # sign-in attempts per minute per client
+  cors_origins: ["http://localhost:8000", "http://127.0.0.1:8000"]
+incident:
+  merge_after_s: 300      # an incident closes after this long with no new activity
+  campaign_window_s: 120   # same campaign + attack type merges only inside this window
+  min_level: HIGH         # only HIGH / CRITICAL decisions create or join incidents
+  keep_last: 200          # retention: newest N incidents are kept
+agent:
+  enabled: false
+  provider: disabled           # disabled | grok | openai | claude | ollama
+  model: ""
+  temperature: 0.2
+  engine: auto                 # auto: LangGraph workflow if installed, else built-in loop | langgraph | loop
+campaigns:                     # SIMULATED cost per click (INR) used for spend / wasted-spend figures
+  default_cpc: 9.0
+  cpc: {C10: 12.0, C11: 8.5, C12: 15.0, C13: 7.0, C14: 10.5, C15: 9.0}
