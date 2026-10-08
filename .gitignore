@@ -10,8 +10,8 @@ __pycache__/
 .secret
 
 # Data & Reports
-data/
-reports/
+/data/
+/reports/
 *.db*
 *.sqlite
 *.pkl
@@ -28,8 +28,8 @@ env/
 *.swo
 *~
 
-# Docker
-.dockerignore
+# Cached
+.ruff_cache/
 
 # GUI
 *.json.key
@@ -40,6 +40,3 @@ env/
 
 # UVicorn
 server.log
-
-# Cached
-.ruff_cache/
