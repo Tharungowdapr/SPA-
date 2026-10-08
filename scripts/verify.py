@@ -143,7 +143,7 @@ def main() -> int:
     print("\n8. Schema import")
     try:
         from aegis.schemas import ClickEvent
-        ce = ClickEvent(user_id="U1", ad_id="A1", campaign_id="C1", device_id="D1", ip_address="1.2.3.4", user_agent="Mozilla")
+        ClickEvent(user_id="U1", ad_id="A1", campaign_id="C1", device_id="D1", ip_address="1.2.3.4", user_agent="Mozilla")
         print("  [OK] ClickEvent validates")
     except Exception as e:
         print(f"  [FAIL] schema: {e}")
@@ -159,7 +159,7 @@ def main() -> int:
             print("  [WARN] some tests require optional deps (river, shap, neo4j) not installed")
             print("  [OK] install optional deps with: pip install 'river[all]' shap neo4j")
         else:
-            print(f"  [FAIL] unexpected test failures")
+            print("  [FAIL] unexpected test failures")
             ok = False
 
     # Summary
