@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AegisClick — Real-time ad fraud detection</title>
+<link rel="stylesheet" href="/static/app.css">
+<style>
+  /* Intro-specific: light editorial theme sharing brand tokens */
+  :root{
+    --i-bg:#f7f8fa; --i-bg2:#ffffff; --i-panel:#ffffff; --i-bd:#e3e6eb;
+    --i-tx:#0b0d12; --i-tx2:#4a5260; --i-tx3:#7a8290;
+    --i-accent:#2563eb; --i-ok:#16a34a; --i-warn:#d97706; --i-crit:#dc2626;
+    --i-mono:"JetBrains Mono","IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+    --i-sans:Inter,Geist,"IBM Plex Sans",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--i-bg);color:var(--i-tx);font:16px/1.5 var(--i-sans)}
+  a{color:var(--i-accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+  header.site{position:sticky;top:0;background:rgba(247,248,250,.85);backdrop-filter:blur(8px);border-bottom:1px solid var(--i-bd);z-index:10}
+  header.site .bar{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+  .brand{font-family:var(--i-mono);font-weight:700;font-size:15px;letter-spacing:.02em;color:var(--i-tx)}
+  .brand small{display:block;font-size:9px;color:var(--i-tx3);font-weight:400;letter-spacing:.08em}
+  nav.site a{margin-left:20px;font-size:14px;color:var(--i-tx2)}
+  nav.site a:hover{color:var(--i-tx);text-decoration:none}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:6px;font-size:14px;font-weight:500;border:1px solid var(--i-bd);background:var(--i-bg2);color:var(--i-tx);transition:all .15s}
+  .btn:hover{border-color:var(--i-tx3);text-decoration:none}
+  .btn.primary{background:var(--i-tx);color:#fff;border-color:var(--i-tx)}
+  .btn.primary:hover{background:#1a1d24}
+  section{padding:80px 0}
+  .hero{padding:100px 0 60px}
+  .hero h1{font-size:52px;line-height:1.05;font-weight:600;letter-spacing:-.02em;margin:0 0 16px;max-width:780px}
+  .hero p{font-size:19px;color:var(--i-tx2);max-width:620px;margin:0 0 28px}
+  .hero .actions{display:flex;gap:12px;flex-wrap:wrap}
+  .eyebrow{font-family:var(--i-mono);font-size:11px;color:var(--i-accent);font-weight:500;margin-bottom:16px;letter-spacing:.04em}
+  h2{font-size:32px;font-weight:600;letter-spacing:-.01em;margin:0 0 12px}
+  .sub{font-size:17px;color:var(--i-tx2);max-width:640px;margin:0 0 40px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .card{background:var(--i-bg2);border:1px solid var(--i-bd);border-radius:10px;padding:24px}
+  .card h3{font-size:16px;font-weight:600;margin:0 0 8px}
+  .card p{font-size:14px;color:var(--i-tx2);margin:0}
+  .card .num{font-family:var(--i-mono);font-size:11px;color:var(--i-tx3);margin-bottom:10px}
+  .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:32px}
+  .flow .step{background:var(--i-bg2);border:1px solid var(--i-bd);border-radius:10px;padding:20px}
+  .flow .step .n{font-family:var(--i-mono);font-size:11px;color:var(--i-accent);font-weight:600;margin-bottom:8px}
+  .flow .step h4{font-size:14px;font-weight:600;margin:0 0 6px}
+  .flow .step p{font-size:13px;color:var(--i-tx2);margin:0}
+  .preview{background:#0b0d12;border-radius:12px;padding:24px;color:#e8edf2;font-family:var(--i-mono);font-size:12px;overflow:hidden}
+  .preview .row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #20262d}
+  .preview .row:last-child{border:none}
+  .preview .lvl{padding:1px 6px;border-radius:2px;font-size:10px;font-weight:600}
+  .preview .crit{color:#e5484d;border:1px solid #5a2a2d;background:#2a1517}
+  .preview .high{color:#e0782f;border:1px solid #5a3a1a;background:#2a1f15}
+  .preview .med{color:#d4a23a;border:1px solid #4a3a1a;background:#2a2315}
+  .trust{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start}
+  .trust ul{list-style:none;padding:0;margin:0}
+  .trust li{padding:10px 0;border-bottom:1px solid var(--i-bd);font-size:14px;color:var(--i-tx2)}
+  .trust li strong{color:var(--i-tx);font-weight:500}
+  .closing{text-align:center;padding:100px 0}
+  .closing h2{font-size:40px;margin-bottom:16px}
+  .closing p{font-size:17px;color:var(--i-tx2);margin:0 0 28px}
+  footer.site{padding:40px 0;border-top:1px solid var(--i-bd);font-size:13px;color:var(--i-tx3)}
+  @media (max-width:768px){
+    .hero h1{font-size:36px}
+    .grid3,.flow,.trust{grid-template-columns:1fr}
+    section{padding:56px 0}
+    .hero{padding:60px 0 40px}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header class="site">
+  <div class="wrap bar">
+    <div class="brand">AEGISCLICK<small>AD FRAUD INTELLIGENCE</small></div>
+    <nav class="site">
+      <a href="#how">How it works</a>
+      <a href="#workflow">Analyst workflow</a>
+      <a href="#trust">Trust</a>
+      <a href="/" class="btn primary" style="margin-left:16px">Open console</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="eyebrow">REAL-TIME AD CLICK FRAUD DETECTION</div>
+    <h1>Detect click fraud in real time, with evidence analysts can trust.</h1>
+    <p>AegisClick ingests click events, scores them through a multi-layer engine, and gives analysts a console to investigate, explain and act — with full audit trails.</p>
+    <div class="actions">
+      <a href="/" class="btn primary">Open the console</a>
+      <a href="#how" class="btn">See how it works</a>
+    </div>
+  </div>
+</section>
+
+<section id="proof" style="padding:0 0 60px">
+  <div class="wrap">
+    <div class="preview">
+      <div class="row"><span>U053 · C13 · D053</span><span class="lvl crit">CRITICAL</span><span>0.96</span></div>
+      <div class="row"><span>U091 · C07 · D091</span><span class="lvl high">HIGH</span><span>0.81</span></div>
+      <div class="row"><span>U012 · C13 · D012</span><span class="lvl med">MEDIUM</span><span>0.44</span></div>
+      <div class="row"><span>U044 · C02 · D044</span><span class="lvl med">MEDIUM</span><span>0.38</span></div>
+      <div style="margin-top:12px;color:#89939e;font-size:11px">Simulated traffic · demo data · real scoring pipeline</div>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <div class="eyebrow">HOW IT WORKS</div>
+    <h2>From click to decision in milliseconds</h2>
+    <p class="sub">Four layers, one verdict. Every score is explained, every action is auditable.</p>
+    <div class="flow">
+      <div class="step"><div class="n">01</div><h4>Ingest</h4><p>Click events arrive via HTTP or batch. Server strips client-supplied provenance.</p></div>
+      <div class="step"><div class="n">02</div><h4>Score</h4><p>Rules, ML (NN+GBT), anomaly (IsolationForest), graph (shared device/IP) and online learning each contribute.</p></div>
+      <div class="step"><div class="n">03</div><h4>Decide</h4><p>Weighted fusion produces a risk score and an action: allow, monitor, flag, block or reject.</p></div>
+      <div class="step"><div class="n">04</div><h4>Investigate</h4><p>Analysts triage alerts and incidents, inspect evidence, and approve actions with full audit trails.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="workflow">
+  <div class="wrap">
+    <div class="eyebrow">ANALYST WORKFLOW</div>
+    <h2>Signal to action, without losing the thread</h2>
+    <p class="sub">The console keeps the analyst's primary loop visible: live signal, alert or incident, investigation, approved action, recorded outcome.</p>
+    <div class="grid3">
+      <div class="card"><div class="num">01</div><h3>Live signal</h3><p>Command Center streams every decision with KPIs, filters and pause control.</p></div>
+      <div class="card"><div class="num">02</div><h3>Alerts & incidents</h3><p>HIGH/CRITICAL decisions become alerts. Related activity merges into incidents automatically.</p></div>
+      <div class="card"><div class="num">03</div><h3>Investigation</h3><p>Per-user timeline, coordination graph, explainability and AI-assisted reports (advisory only).</p></div>
+      <div class="card"><div class="num">04</div><h3>Evidence</h3><p>Model scores, rules fired, factors and plain-English reasons for every decision.</p></div>
+      <div class="card"><div class="num">05</div><h3>Action</h3><p>Block, unblock, acknowledge, resolve — with confirmation and audit logging.</p></div>
+      <div class="card"><div class="num">06</div><h3>Outcome</h3><p>Track resolution, drift, model health and pipeline status over time.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="trust">
+  <div class="wrap">
+    <div class="eyebrow">TRUST & OPERATING MODES</div>
+    <h2>Honest about what is real and what is demo</h2>
+    <p class="sub">AegisClick runs locally by default. Integrations are optional. Labels on simulated traffic are ground-truth for evaluation, not real fraud.</p>
+    <div class="trust">
+      <ul>
+        <li><strong>Local-first.</strong> SQLite by default. PostgreSQL, Redis and Kafka are optional via environment variables.</li>
+        <li><strong>Simulated traffic.</strong> The simulator generates labeled synthetic clicks for testing and evaluation. Labels are ground truth for benchmarking, not evidence of real fraud.</li>
+        <li><strong>AI is advisory.</strong> The LLM investigation agent is optional and never executes actions without human approval.</li>
+        <li><strong>No fake proof.</strong> No customer logos, testimonials or invented metrics. Detection quality is measured on held-out data.</li>
+      </ul>
+      <ul>
+        <li><strong>RBAC.</strong> Viewer (read), Analyst (operate), Admin (settings/destructive).</li>
+        <li><strong>Audit trail.</strong> Every block, unblock, reset and settings change is logged.</li>
+        <li><strong>Model registry.</strong> Versioned models with retrain/rollback and PSI drift monitoring.</li>
+        <li><strong>Open source.</strong> MIT licensed. Run locally, inspect everything.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="closing">
+  <div class="wrap">
+    <h2>Start detecting fraud in minutes.</h2>
+    <p>Run locally with one command. No cloud account required.</p>
+    <a href="/" class="btn primary">Open the console</a>
+    <div style="margin-top:16px;font-size:13px;color:var(--i-tx3)">Demo logins: admin@aegis.local / admin123 · analyst@aegis.local / analyst123 · viewer@aegis.local / viewer123</div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">AegisClick — MIT License. Built for analysts who need evidence, not noise.</div>
+</footer>
+</body>
+</html>

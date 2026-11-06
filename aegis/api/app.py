@@ -1084,6 +1084,10 @@ def create_app(settings: Settings | None = None, bundle: Any = "auto", pool_seed
     async def control():
         return FileResponse(WEB / "control.html")
 
+    @app.get("/intro", include_in_schema=False)
+    async def intro():
+        return FileResponse(WEB / "intro.html")
+
     @app.get("/sim", include_in_schema=False)
     async def simulator():
         return FileResponse(WEB / "sim.html")
