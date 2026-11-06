@@ -156,10 +156,41 @@ def compact(d: Decision) -> dict:
             "reason": d.reason, "reason_title": d.reason_title}
 
 
+# Known placeholder/weak secrets that must never be used in production.
+_WEAK_SECRETS = {
+    "dev-insecure-secret-change-me",
+    "dev-insecure-change-in-production",
+    "secret",
+    "changeme",
+    "password",
+    "admin",
+    "test",
+    "default",
+}
+
+
+def _is_weak_secret(value: str) -> bool:
+    v = (value or "").strip().lower()
+    if len(v) < 32:
+        return True
+    if v in _WEAK_SECRETS:
+        return True
+    # reject anything that is just a placeholder-ish short string repeated
+    if len(set(v)) < 8:
+        return True
+    return False
+
+
 def create_app(settings: Settings | None = None, bundle: Any = "auto", pool_seed: int | None = None) -> FastAPI:
     s = settings or load_settings()
-    if s.get("app.env") == "production" and s.secret_key.startswith("dev-insecure"):
-        raise RuntimeError("SECRET_KEY must be set in production")
+    is_prod = s.get("app.env") == "production"
+    if is_prod:
+        if _is_weak_secret(s.secret_key):
+            raise RuntimeError("SECRET_KEY must be set to a strong, unique value (>=32 chars, not a known placeholder) in production")
+        if _is_weak_secret(s.master_key):
+            raise RuntimeError("MASTER_KEY must be set to a strong, unique value in production")
+        if s.master_key == s.secret_key:
+            raise RuntimeError("MASTER_KEY must differ from SECRET_KEY in production")
 
     db_note = ""
     store = None
@@ -167,7 +198,9 @@ def create_app(settings: Settings | None = None, bundle: Any = "auto", pool_seed
     if url:
         try:
             store = Store(url)
-        except Exception as exc:  # noqa: BLE001 - unreachable Postgres must not stop the platform
+        except Exception as exc:  # noqa: BLE001
+            if is_prod:
+                raise RuntimeError(f"Configured database backend unavailable in production: {exc}") from exc
             db_note = f"postgres unavailable ({type(exc).__name__}); using sqlite"
     if store is None:
         store = Store(s.resolve_path("app.db_path") if s.get("app.db_path") != ":memory:" else ":memory:")
@@ -199,8 +232,11 @@ def create_app(settings: Settings | None = None, bundle: Any = "auto", pool_seed
     for email, role, env, default in (("admin@aegis.local", "admin", "ADMIN_PASSWORD", "admin123"),
                                       ("analyst@aegis.local", "analyst", "ANALYST_PASSWORD", "analyst123"),
                                       ("viewer@aegis.local", "viewer", "VIEWER_PASSWORD", "viewer123")):
+        pwd = os.environ.get(env)
+        if is_prod and not pwd:
+            raise RuntimeError(f"Required secret {env} must be set in production (no default demo password)")
         if not store.get_user(email):
-            store.add_user(email, role, hash_password(os.environ.get(env, default), iters))
+            store.add_user(email, role, hash_password(pwd or default, iters))
 
     def _load_ai() -> None:
         row = store._one("SELECT * FROM api_settings ORDER BY updated DESC LIMIT 1")
