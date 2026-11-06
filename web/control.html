@@ -173,8 +173,8 @@ const PAGES=[
 
 // Build VIEWS (for nav rendering) and ROUTES / VIEW_ROUTE from PAGES
 const VIEWS=PAGES.map(p=>[p[0],p[1],p[2]])
-function navItem(v){return '<a data-v="'+v[0]+'" tabindex="0" onclick="go('+JSON.stringify(v[0])+')" onkeydown="if(event.key===\'Enter\')go('+JSON.stringify(v[0])+')">'+v[1]+'<kbd>'+v[2]+'</kbd></a>'};const groupOrder=[["overview",["start","cmd","alerts","user"]],["analysis",["incidents","analytics","target","campaigns","logs","patterns","saved","search"]],["ml",["models","pipeline"]],["admin",["blocklist","rules","settings","datarst"]]]
-$('#nav').innerHTML=groupOrder.map(([title,keys])=>title?'<h6>'+title.toUpperCase()+'</h6>':'').join('')+groupOrder.map(([,keys])=>keys.map(k=>navItem(VIEWS.find(v=>v[0]===k))).join('')).join('')
+function navItem(v){return '<a data-v="'+v[0]+'" href="#/'+v[0]+'" tabindex="0" onclick="go(\''+v[0]+'\');return false" onkeydown="if(event.key===\'Enter\'){go(\''+v[0]+'\');return false}">'+v[1]+'<kbd>'+v[2]+'</kbd></a>'};const groupOrder=[["overview",["cmd","alerts"]],["analysis",["analytics","target","campaigns","logs","patterns","saved","search"]],["admin",["blocklist","settings","datarst"]]]
+$('#nav').innerHTML=groupOrder.map(([title,keys])=>title?'<h6>'+title.toUpperCase()+'</h6>':'').join('')+groupOrder.map(([,keys])=>keys.map(k=>navItem(VIEWS.find(v=>v[0]===k))).join('')).join('')+'<h6>SIM</h6><a href="/sim" target="_blank">Simulator<kbd>S</kbd></a>'
 
 const VIEW_ROUTE={start:'#/start',cmd:'#/command',alerts:'#/alerts',user:'#/investigation/user',incidents:'#/incidents',incident:'#/incident',analytics:'#/analysis/combined',target:'#/analysis/target',campaigns:'#/campaigns',logs:'#/logs/events',patterns:'#/analysis/patterns',saved:'#/attack/saved',search:'#/search',models:'#/models',pipeline:'#/pipeline',blocklist:'#/blocklist',rules:'#/rules',settings:'#/settings',datarst:'#/settings/data'};
 const ROUTES={'#/start':['start'],'#/command':['cmd'],'#/alerts':['alerts'],'#/investigation/user':['user','user'],'#/investigation/alert':['user','alert'],'#/incidents':['incidents'],'#/incident':['incident','incident'],'#/analysis/combined':['analytics'],'#/analysis/target':['target','target'],'#/analysis/target/campaign':['target','campaign'],'#/campaigns':['campaigns'],'#/logs/events':['logs'],'#/analysis/patterns':['patterns'],'#/attack/saved':['saved'],'#/search':['search'],'#/models':['models'],'#/pipeline':['pipeline'],'#/blocklist':['blocklist'],'#/rules':['rules'],'#/settings':['settings'],'#/settings/data':['datarst']};
@@ -247,7 +247,7 @@ function vCmd(m){
   $('#flt').oninput=e=>{S.filter=e.target.value.toLowerCase();drawStream(true)};$('#lvl').onchange=e=>{S.lvl=e.target.value;drawStream(true)};
   $('#pbtn').onclick=togglePause;$('#xbtn').onclick=exportCsv;
   drawKpis();drawStream(true);drawDist();drawTl();
-  every(()=>safe($('#topu'),async()=>{const r=await api('/api/fraud/top-users?limit=8');$('#topu').innerHTML=r.length?`<table>${r.map(u=>`<tr class="row" onclick="go('user','${esc(u.user_id)}')"}}><td class="m">${esc(u.user_id)}</td><td class="m">${(u.max_risk).toFixed(2)}</td><td class="muted">${u.flagged} flagged</td></tr>`).join('')}</table>`:'<div class="empty">No data yet</div>'}),4000);
+  every(()=>safe($('#topu'),async()=>{const r=await api('/api/fraud/top-users?limit=8');$('#topu').innerHTML=r.length?`<table>${r.map(u=>`<tr class="row" onclick="go('user','${esc(u.user_id)}')"><td class="m">${esc(u.user_id)}</td><td class="m">${(u.max_risk).toFixed(2)}</td><td class="muted">${u.flagged} flagged</td></tr>`).join('')}</table>`:'<div class="empty">No data yet</div>'}),4000);
   every(()=>safe($('#almini'),async()=>{const r=await api('/api/alerts?status=open&limit=6');$('#almini').innerHTML=r.length?r.map(a=>`<div style="padding:6px 10px;border-top:1px solid var(--bd)">${tag(a.severity)} ${esc(a.title)}<div class="hint">${hms(a.ts)}</div></div>`).join(''):'<div class="empty">NO ACTIVE FRAUD ALERTS<br><span class="hint">No critical threats detected.</span></div>'}),4000);
 }
 function drawKpis(){const el=$('#kpis');if(!el||!S.stats)return;const s=S.stats;
@@ -257,7 +257,7 @@ function drawKpis(){const el=$('#kpis');if(!el||!S.stats)return;const s=S.stats;
    k('AVG DETECTION',s.latency_ms.avg+'ms',`p95 ${s.latency_ms.p95}ms`)+k('MODEL',esc(s.model_version),`${s.online_learned} online updates`)}
 function matches(e){if(S.lvl==='MEDIUM'){if(e.level==='LOW')return false}else if(S.lvl&&e.level!==S.lvl)return false;
   return !S.filter||(e.user+' '+e.ad+' '+e.campaign+' '+e.ip).toLowerCase().includes(S.filter)}
-function rowHtml(e,fresh){return `<tr class="row ${fresh?'new':''}" tabindex="0" onclick="openEvent('${esc(e.id)}')"}} onkeydown="if(event.key===\'Enter\')openEvent('${esc(e.id)}')">
+function rowHtml(e,fresh){return `<tr class="row ${fresh?'new':''}" tabindex="0" onclick="openEvent('${esc(e.id)}')" onkeydown="if(event.key===\'Enter\')openEvent('${esc(e.id)}')">
  <td class="m">${hms(e.ts)}</td><td class="m">${esc(e.user)}</td><td class="m">${esc(e.ad)}</td><td class="m">${esc(e.campaign)}</td><td class="m">${e.risk.toFixed(3)}</td><td>${tag(e.level)}</td><td>${tag(e.action)}</td></tr>`}
 function drawStream(full){const tb=$('#tb');if(!tb)return;const list=S.events.filter(matches).slice(0,120);
   $('#emp').style.display=S.events.length?'none':'block';
@@ -275,6 +275,110 @@ function drawTl(){const c=$('#tl');if(!c)return;const w=c.width=c.clientWidth*de
 function track(items){for(const e of items){const sec=Math.floor(Date.now()/1000);if(sec!==S.lastSec){if(S.acc.n)S.series.push({avg:S.acc.sum/S.acc.n,max:S.acc.max});S.acc={n:0,sum:0,max:0};S.lastSec=sec}S.acc.n++;S.acc.sum+=e.risk;S.acc.max=Math.max(S.acc.max,e.risk)}
   if(S.series.length>300)S.series.splice(0,100)}
 
+function vStart(m){
+  m.innerHTML=`<div class="panel" style="margin-bottom:12px"><h3>START HERE <span class="hint">task-oriented entry point</span></h3>
+   <div class="body"><p class="hint" style="margin:0 0 10px">Welcome to FRAUD//CONTROL - a real-time ad-fraud intelligence console. Pick a task below, or press Cmd/Ctrl+K for the command palette.</p>
+   <div class="grid g2">
+    <div class="card" onclick="go('cmd')"><h4>Command Center</h4><p>Live decision stream, KPIs, pause/filter.</p></div>
+    <div class="card" onclick="go('alerts')"><h4>Alert Center</h4><p>HIGH/CRITICAL alerts, acknowledge, block-all.</p></div>
+    <div class="card" onclick="go('incidents')"><h4>Incidents</h4><p>Merged clusters, block-all, timeline.</p></div>
+    <div class="card" onclick="go('analytics')"><h4>Combined Analysis</h4><p>Cross-layer clusters, totals, trend.</p></div>
+    <div class="card" onclick="go('target')"><h4>Targeted Analysis</h4><p>Victims, campaigns, wasted spend.</p></div>
+    <div class="card" onclick="go('campaigns')"><h4>Campaign Analytics</h4><p>Campaign-level performance.</p></div>
+    <div class="card" onclick="go('logs')"><h4>Event Logs</h4><p>Full decision feed, filters, CSV export.</p></div>
+    <div class="card" onclick="go('patterns')"><h4>Pattern Library</h4><p>Create/preview signatures, hit counts.</p></div>
+    <div class="card" onclick="go('saved')"><h4>Saved Attacks</h4><p>Named scenarios, replay, compare, import/export.</p></div>
+    <div class="card" onclick="go('search')"><h4>Search</h4><p>Cross-index search.</p></div>
+    <div class="card" onclick="go('models')"><h4>Model Monitor</h4><p>PSI drift, importance, retrain/rollback.</p></div>
+    <div class="card" onclick="go('pipeline')"><h4>Pipeline</h4><p>Component health, weights, latency.</p></div>
+    <div class="card" onclick="go('blocklist')"><h4>Blocklist</h4><p>Active blocks, unblock, incident linkage.</p></div>
+    <div class="card" onclick="go('rules')"><h4>Rules</h4><p>Create/edit/toggle conditions, weights.</p></div>
+    <div class="card" onclick="go('settings')"><h4>Settings</h4><p>Thresholds, retention, AI, keys, login limits.</p></div>
+    <div class="card" onclick="go('datarst')"><h4>Data &amp; Reset</h4><p>Scoped clear with preview, presets, audit.</p></div>
+   </div></div></div>`;
+}
+
+function vIncidents(m){
+  m.innerHTML=`<div class="panel"><h3>INCIDENTS <span class="row-f"><select id="is"><option value="">all</option><option>open</option><option>closed</option></select><button class="d" onclick="clearScope('incidents')">CLEAR</button></span></h3><div id="ibody" class="skeleton">loading...</div></div>`;
+  async function load(){const st=$('#is').value;const r=await api('/api/incidents'+(st?'?status='+st:''));const el=$('#ibody');if(!r.length){el.className='body';el.innerHTML='<div class="empty">NO INCIDENTS</div>';return}
+    el.className='body';el.innerHTML=`<div class="scroll"><table><thead><tr><th>ID</th><th>STATUS</th><th>SEVERITY</th><th>ENTITIES</th><th>CREATED</th><th></th></tr></thead>${r.map(i=>`<tr class="row" onclick="go('incident','${esc(i.id)}')"><td class="m">${esc(i.id)}</td><td>${tag(i.status)}</td><td>${tag(i.severity||'HIGH')}</td><td class="m">${esc((i.entities||[]).join(', '))}</td><td class="m">${hms(i.created_at||i.ts)}</td><td><button onclick="event.stopPropagation();go('incident','${esc(i.id)}')">OPEN</button></td></tr>`).join('')}</table></div>`}
+  $('#is').onchange=load;safe($('#ibody'),load)}
+function vIncident(m){
+  const id=S.incidentId||routeArgs().id||'';
+  m.innerHTML=`<div id="idet" class="skeleton">loading...</div>`;
+  safe($('#idet'),async()=>{
+    const r=await api('/api/incidents/'+encodeURIComponent(id));
+    $('#idet').className='';$('#idet').innerHTML=`<div class="panel"><h3>INCIDENT ${esc(id)} <span class="row-f">${Auth.role!=='viewer'?'<button class="d" onclick="blockAllIncident()">BLOCK ALL</button>':''}</span></h3>
+     <div class="body kv"><span>status</span><span>${tag(r.status)}</span><span>severity</span><span>${tag(r.severity||'HIGH')}</span><span>entities</span><span class="m">${esc((r.entities||[]).join(', '))}</span><span>created</span><span class="m">${hms(r.created_at||r.ts)}</span></div></div>
+     <div class="panel" style="margin-top:10px"><h3>COMBINED VIEW</h3><div id="iview" class="body skeleton">loading...</div></div>`;
+    try{const c=await api('/api/incidents/'+encodeURIComponent(id)+'/combined' );$('#iview').className='body';$('#iview').innerHTML='<pre class="m" style="white-space:pre-wrap">'+esc(JSON.stringify(c,null,2).slice(0,2000))+'</pre>'}catch(e){$('#iview').className='body';$('#iview').innerHTML='<div class="empty">'+esc(e.message)+'</div>'}
+  })
+}
+window.blockAllIncident=async()=>{if(!confirm('Block all entities in this incident?'))return;try{await api('/api/incidents/'+encodeURIComponent(S.incidentId||'')+'/block-all',{method:'POST',body:{confirm:true}});toast('blocked');go('blocklist')}catch(e){toast(e.message,true)}}
+function vTarget(m){
+  m.innerHTML=`<div class="panel"><h3>TARGETED ANALYSIS <span class="row-f"><select id="tw"><option value="0">all time</option><option value="5">last 5 min</option><option value="60">last hour</option><option value="1440">last day</option></select><button class="p" id="tgo">APPLY</button></span></h3><div id="tbody" class="skeleton">loading...</div></div>`;
+  async function load(){const w=$('#tw').value;const r=await api('/api/analysis/target?since_minutes='+w);const el=$('#tbody');el.className='body';
+    const tb=(rows,title)=>`<div class="panel" style="margin-top:10px"><h3>${title}</h3><div class="scroll"><table><thead><tr><th>KEY</th><th>N</th></tr></thead>${(rows||[]).map(x=>`<tr><td class="m">${esc(x.user_id||x.campaign_id||x.k||x.id||JSON.stringify(x).slice(0,40))}</td><td class="m">${fmt(x.clicks||x.n||x.count||0)}</td></tr>`).join('')||'<tr><td class="empty">none</td></tr>'}</table></div></div>`;
+    el.innerHTML=`<div class="kpis" style="grid-template-columns:repeat(3,1fr)"><div class="kpi"><label>WASTED CLICKS</label><b>${fmt(r.wasted_clicks)}</b></div><div class="kpi"><label>AT RISK USERS</label><b>${fmt(r.at_risk_users)}</b></div><div class="kpi"><label>CAMPAIGNS</label><b>${fmt((r.campaigns||[]).length)}</b></div></div>
+     ${tb(r.campaigns,'CAMPAIGNS')}${tb(r.victims,'VICTIMS')}${tb(r.clean,'CLEAN')}`};
+  $('#tgo').onclick=load;safe($('#tbody'),load)}
+function vLogs(m){
+  m.innerHTML=`<div class="panel"><h3>EVENT LOGS <span class="row-f"><input id="lq" placeholder="search text" style="width:160px"><select id="ll"><option value="">all levels</option><option>MEDIUM</option><option>HIGH</option><option>CRITICAL</option></select><button class="p" id="lgo">APPLY</button><button onclick="exportCsv()">EXPORT</button></span></h3><div id="lbody" class="skeleton">loading...</div></div>`;
+  async function load(){const q=$('#lq').value;const l=$('#ll').value;const r=await api('/api/logs/events?'+(q?'q='+encodeURIComponent(q)+'&':'')+(l?'level='+l+'&':'')+'limit=200');const el=$('#lbody');el.className='body';
+    const rows=r.events||r.items||r||[];
+    el.innerHTML=rows.length?`<div class="scroll"><table><thead><tr><th>TIME</th><th>USER</th><th>AD</th><th>CAMPAIGN</th><th>RISK</th><th>LEVEL</th><th>ACTION</th></tr></thead>${rows.map(e=>`<tr class="row" onclick="openEvent('${esc(e.id||e.event_id)}')"><td class="m">${hms(e.ts||e.timestamp)}</td><td class="m">${esc(e.user||e.user_id)}</td><td class="m">${esc(e.ad||e.ad_id)}</td><td class="m">${esc(e.campaign||e.campaign_id)}</td><td class="m">${(e.risk||0).toFixed(3)}</td><td>${tag(e.level)}</td><td>${tag(e.action)}</td></tr>`).join('')}</table></div>`:'<div class="empty">NO EVENTS</div>'};
+  $('#lgo').onclick=load;safe($('#lbody'),load)}
+function vPatterns(m){
+  m.innerHTML=`<div class="panel"><h3>PATTERN LIBRARY <span class="row-f"><button class="p" onclick="newPattern()">NEW PATTERN</button></span></h3><div id="pbody" class="skeleton">loading...</div></div><div id="peditor"></div>`;
+  async function load(){const r=await api('/api/patterns');let saved=[];try{const s=await api('/api/simulations/saved');saved=s.saved||s.items||s||[];}catch(e){}const el=$('#pbody');el.className='body';
+    const pats=r.patterns||r.items||r||[];
+    const builtins=r.builtins||[];
+    el.innerHTML=(builtins.length?`<h4>BUILT-INS</h4><div class="grid g2" style="margin-bottom:10px">${builtins.map(b=>`<div class="builtin"><strong>${esc(b.label||b.key)}</strong>${esc(b.text||'')}</div>`).join('')}</div>`:'')+
+      (pats.length?`<h4>CUSTOM</h4><div class="scroll"><table><thead><tr><th>NAME</th><th>HITS</th><th>ACTION</th><th></th></tr></thead>${pats.map(p=>`<tr><td class="m">${esc(p.name)}</td><td class="m">${fmt(p.hits||0)}</td><td>${tag(p.action||'label')}</td><td><button onclick="delPattern(${p.id})">DELETE</button></td></tr>`).join('')}</table></div>`:'<div class="empty">No custom patterns yet.</div>')+
+      `<h4 style="margin-top:14px">ATTACK TYPES &amp; HOW THEY ARE DETECTED</h4><div class="grid g2">${window.ATTACK_INFO.map(a=>`<div class="builtin"><strong>${esc(a.name)}</strong><div class="hint">${esc(a.desc)}</div><div style="margin-top:4px"><b>How it happens:</b> ${esc(a.how)}</div><div><b>Detect via:</b> <span class="m">${esc(a.detect)}</span></div></div>`).join('')}</div>
+       <h4 style="margin-top:14px">SAVED ATTACKS</h4>${saved.length?`<div class="scroll"><table><thead><tr><th>NAME</th><th>TAGS</th><th>CREATED</th></tr></thead>${saved.map(s=>`<tr><td class="m">${esc(s.name)}</td><td class="m">${esc((s.tags||[]).join(', '))}</td><td class="m">${hms(s.created_at||s.ts)}</td></tr>`).join('')}</table></div>`:'<div class="empty">No saved attacks yet. Run a simulation then save it.</div>'}`};
+  safe($('#pbody'),load)}
+window.ATTACK_INFO=[{name:'Burst',desc:'Many clicks in a very short window.',how:'Rapid-fire requests from one user/device, minimal intervals.',detect:'min_interval, burst_score, clicks_10s'},{name:'Bot',desc:'Scripted timing, machine-like.',how:'Uniform intervals, bot user-agent, no human variance.',detect:'interval_cv, ua_bot_flag, timing_entropy'},{name:'Click farm',desc:'Distributed users sharing device/IP.',how:'Many distinct users on one device or IP subnet.',detect:'unique_users_per_device, unique_devices_per_ip'},{name:'Device farm',desc:'Many users, one device.',how:'Single device generating clicks for many accounts.',detect:'unique_users_per_device'},{name:'IP rotation',desc:'Single user, many IPs.',how:'One account hopping across IPs to evade blocks.',detect:'unique_ips_per_device, geo_ip_countries'},{name:'Campaign hopping',desc:'Jumps across campaigns.',how:'Same actor rapidly switching campaigns.',detect:'campaign_click_share_5m'},{name:'Low and slow',desc:'Low rate, long duration.',how:'Stays under thresholds by spreading clicks over time.',detect:'clicks_1h, avg_interval'},{name:'Mimicry',desc:'Human-like with subtle anomalies.',how:'Imitates human timing but slightly off distributions.',detect:'timing_entropy, interval_std'}];
+window.newPattern=()=>{$('#peditor').innerHTML=`<div class="panel" style="margin-top:10px"><h3>NEW PATTERN</h3><div class="body">
+   <label class="f">NAME</label><input id="pn" style="width:100%"><label class="f">DESCRIPTION</label><input id="pd" style="width:100%">
+   <label class="f">ACTION</label><select id="pa"><option>label</option><option>flag</option><option>block</option></select>
+   <div class="row-f" style="margin-top:8px"><button class="p" onclick="savePattern()">SAVE</button><button onclick="$('#peditor').innerHTML=''">CANCEL</button></div></div></div>`}
+window.savePattern=async()=>{try{await api('/api/patterns',{method:'POST',body:{name:$('#pn').value,description:$('#pd').value,action:$('#pa').value,signature:{conditions:[]}}});toast('saved');$('#peditor').innerHTML='';vPatterns($('#main'))}catch(e){toast(e.message,true)}}
+window.delPattern=async(id)=>{if(!confirm('Delete pattern?'))return;try{await api('/api/patterns/'+id,{method:'DELETE'});toast('deleted');vPatterns($('#main'))}catch(e){toast(e.message,true)}}
+function vSaved(m){
+  m.innerHTML=`<div class="panel"><h3>SAVED ATTACKS <span class="row-f"><button class="p" onclick="importSaved()">IMPORT JSON</button><button class="p" onclick="seedDemo()">SEED DEMO</button></span></h3><div id="sbody" class="skeleton">loading...</div></div><div id="seditor"></div>`;
+  async function load(){const r=await api('/api/simulations/saved');const el=$('#sbody');el.className='body';
+    const items=r.saved||r.items||r||[];
+    el.innerHTML=items.length?`<div class="scroll"><table><thead><tr><th>NAME</th><th>TAGS</th><th>CREATED</th><th></th></tr></thead>${items.map(s=>`<tr><td class="m">${esc(s.name)}</td><td class="m">${esc((s.tags||[]).join(', '))}</td><td class="m">${hms(s.created_at||s.ts)}</td><td class="row-f"><button onclick="replaySaved('${esc(s.id)}')">REPLAY</button><button onclick="dupSaved('${esc(s.id)}')">DUP</button><button onclick="exportSaved('${esc(s.id)}')">EXPORT</button><button class="d" onclick="delSaved('${esc(s.id)}')">DELETE</button></td></tr>`).join('')}</table></div>`:'<div class="empty">No saved attacks yet. Run a simulation then save it.</div>'};
+  safe($('#sbody'),load)}
+window.replaySaved=async(id)=>{const speed=prompt('Replay speed (1-50x)','5');if(!speed)return;try{await api('/api/simulations/'+id+'/replay',{method:'POST',body:{speed:parseFloat(speed)}});toast('replaying')}catch(e){toast(e.message,true)}}
+window.dupSaved=async(id)=>{try{await api('/api/simulations/'+id+'/duplicate',{method:'POST'});toast('duplicated');vSaved($('#main'))}catch(e){toast(e.message,true)}}
+window.exportSaved=async(id)=>{try{const r=await api('/api/simulations/'+id+'/export');const a=document.createElement('a');a.href='data:application/json,'+encodeURIComponent(JSON.stringify(r));a.download='attack_'+id+'.json';a.click()}catch(e){toast(e.message,true)}}
+window.delSaved=async(id)=>{if(!confirm('Delete saved attack?'))return;try{await api('/api/simulations/'+id,{method:'DELETE'});toast('deleted');vSaved($('#main'))}catch(e){toast(e.message,true)}}
+window.importSaved=()=>{$('#seditor').innerHTML=`<div class="panel" style="margin-top:10px"><h3>IMPORT JSON</h3><div class="body"><textarea id="imp" style="width:100%;height:120px"></textarea><div class="row-f" style="margin-top:8px"><button class="p" onclick="doImport()">IMPORT</button><button onclick="$('#seditor').innerHTML=''">CANCEL</button></div></div></div>`}
+window.doImport=async()=>{try{const j=JSON.parse($('#imp').value);await api('/api/simulations/import',{method:'POST',body:j});toast('imported');$('#seditor').innerHTML='';vSaved($('#main'))}catch(e){toast(e.message,true)}}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+window.seedDemo=async()=>{const demos=[{kind:'bot',params:{duration:6,intensity:6,target_campaign:'C1'},name:'Demo: Bot burst on C1'},{kind:'click_farm',params:{duration:8,intensity:4,target_campaign:'C2'},name:'Demo: Click farm on C2'},{kind:'mimicry',params:{duration:10,intensity:3,target_campaign:'C3'},name:'Demo: Mimicry on C3'}];toast('Seeding demo attacks...');for(const d of demos){try{const st=await api('/api/simulation/'+d.kind,{method:'POST',body:d.params});const run=Array.isArray(st)?st[0]:st;await sleep((d.params.duration+2)*1000);const dbid=run.db_id||run.id;await api('/api/simulations/'+dbid+'/save',{method:'POST',body:{name:d.name,notes:'Seeded demo attack',tags:['demo']}});toast('Saved '+d.name);}catch(e){toast('Seed failed: '+e.message,true)}}vSaved($('#main'));}
+function vSearch(m){
+  m.innerHTML=`<div class="panel"><h3>SEARCH <span class="row-f"><select id="sex" style="width:200px"><option value="">example queries</option><option value="U001">User U001</option><option value="C1">Campaign C1</option><option value="bot">attack: bot</option><option value="click_farm">attack: click_farm</option><option value="incident">incidents</option><option value="alert">alerts</option></select><input id="sq" placeholder="user, campaign, ad, device, incident, alert" style="width:260px"><button class="p" id="sgo">SEARCH</button><button class="p" id="sall">SEARCH ALL</button></span></h3><div id="sres" class="body"><div class="empty">Type a query or pick an example.</div></div></div>`;
+  $('#sex').onchange=e=>{if(e.target.value){$('#sq').value=e.target.value;run()}};
+  async function run(){const q=$('#sq').value.trim();if(!q)return;const r=await api('/api/analysis/search?q='+encodeURIComponent(q));const el=$('#sres');let html='';for(const [k,v] of Object.entries(r)){if(k==='q')continue;if(Array.isArray(v)&&v.length){html+='<h4>'+esc(k.toUpperCase())+'</h4><div class="scroll"><table><thead><tr><th>ID</th></tr></thead>'+v.map(x=>'<tr><td class="m">'+esc(x.id||x.user_id||x.campaign_id||x.ad_id||x.device_id||JSON.stringify(x).slice(0,60))+'</td></tr>').join('')+'</table></div>'}}el.innerHTML=html||'<div class="empty">No results.</div>'}
+  async function runAll(){const el=$('#sres');el.innerHTML='<div class="skeleton">searching...</div>';let html='';const examples=['U001','U002','C1','C2','bot','alert'];for(const q of examples){try{const r=await api('/api/analysis/search?q='+encodeURIComponent(q));for(const [k,v] of Object.entries(r)){if(k==='q')continue;if(Array.isArray(v)&&v.length){html+='<h4>'+esc(q)+' - '+esc(k.toUpperCase())+'</h4><div class="scroll"><table><thead><tr><th>ID</th></tr></thead>'+v.slice(0,5).map(x=>'<tr><td class="m">'+esc(x.id||x.user_id||x.campaign_id||x.ad_id||x.device_id||JSON.stringify(x).slice(0,60))+'</td></tr>').join('')+'</table></div>'}}}catch(e){}}el.innerHTML=html||'<div class="empty">No results.</div>'}
+  $('#sgo').onclick=run;$('#sq').onkeydown=e=>{if(e.key==='Enter')run()};$('#sall').onclick=runAll}
+function vDataRst(m){
+  m.innerHTML=`<div class="row-f" style="margin-bottom:10px;gap:6px"><button onclick="go('settings')">System &amp; AI</button><button onclick="go('models')">Models</button><button onclick="go('pipeline')">Pipeline</button><button onclick="go('rules')">Rules</button><button onclick="go('datarst')">Data &amp; Reset</button></div><div class="panel"><h3>DATA &amp; RESET</h3><div id="dscopes" class="skeleton">loading...</div></div><div id="dpreview"></div><div id="dexec"></div>`;
+  safe($('#dscopes'),async()=>{
+    const r=await api('/api/admin/reset/scopes');const el=$('#dscopes');el.className='body';
+    el.innerHTML=`<div class="hint">Select scopes to clear. Admin-only scopes require admin role.</div>
+     <div style="margin-top:8px">${(r.scopes||[]).map(s=>`<label style="display:block;margin:4px 0"><input type="checkbox" data-scope="${esc(s.id)}" ${s.admin_only&&Auth.role!=='admin'?'disabled':''}> ${esc(s.id)} ${s.admin_only?'(admin)':''}</label>`).join('')}</div>
+     <div class="row-f" style="margin-top:10px"><button class="p" onclick="previewReset()">PREVIEW</button><button class="d" onclick="clearEverything()">CLEAR EVERYTHING</button></div>`;
+  })
+}
+window.previewReset=async()=>{const scopes=[...document.querySelectorAll('[data-scope]:checked')].map(x=>x.dataset.scope);const r=await api('/api/admin/reset/preview',{method:'POST',body:{scopes}});$('#dpreview').innerHTML=`<div class="panel" style="margin-top:10px"><h3>PREVIEW</h3><div class="body"><pre class="m">${esc(JSON.stringify(r,null,2))}</pre><div class="row-f" style="margin-top:8px"><label><input type="checkbox" id="dconfirm"> I confirm</label><button class="d" onclick="execReset()">EXECUTE</button></div></div></div>`}
+window.execReset=async()=>{if(!$('#dconfirm').checked){toast('confirm required',true);return};const scopes=[...document.querySelectorAll('[data-scope]:checked')].map(x=>x.dataset.scope);try{await api('/api/admin/reset',{method:'POST',body:{scopes,confirm:true}});toast('reset done');go('cmd')}catch(e){toast(e.message,true)}}
+window.clearEverything=async()=>{if(!confirm('Clear ALL data and restart from a clean slate?'))return;const boxes=[...document.querySelectorAll('[data-scope]')];boxes.forEach(b=>b.checked=true);try{await api('/api/admin/reset',{method:'POST',body:{scopes:boxes.map(b=>b.dataset.scope),confirm:true}});toast('everything cleared');S.events=[];S.pending=[];S.series=[];render()}catch(e){toast(e.message,true)}}
+
+
 /* ---------------- Event drawer ---------------- */
 function closeDrawer(){$('#drawer').classList.remove('open')}
 async function openEvent(id){const d=$('#drawer');d.classList.add('open');d.innerHTML='<div class="skeleton">loading...</div>';
@@ -290,7 +394,7 @@ async function openEvent(id){const d=$('#drawer');d.classList.add('open');d.inne
   <h4>DETAILS</h4><div class="kv"><span>user</span><span class="m">${esc(user)}</span><span>ad / campaign</span><span class="m">${esc(r?r.ad_id:mem.ad)} / ${esc(r?r.campaign_id:mem.campaign)}</span>
   <span>device</span><span class="m">${esc(r?r.device_id:mem.device)}</span><span>ip</span><span class="m">${esc(r?r.ip_mask:mem.ip)}</span><span>rules fired</span><span class="m">${esc(((r?r.rules:mem.rules)||[]).join(', ')||'none')}</span>
   <span>model</span><span class="m">${esc(r?r.model_version:'-')}</span><span>latency</span><span class="m">${esc(r?r.latency_ms:mem.lat)} ms</span></div>
-  <h4>ACTIONS</h4><div class="row-f"><button onclick="go('user','${esc(user)}')"}}>OPEN USER</button><button class="d" onclick="blockUser('${esc(user)}')"}}>BLOCK USER</button>
+  <h4>ACTIONS</h4><div class="row-f"><button onclick="go('user','${esc(user)}')">OPEN USER</button><button class="d" onclick="blockUser('${esc(user)}')">BLOCK USER</button>
   <button onclick="fb('${esc(id)}",1)">MARK FRAUD</button><button onclick="fb('${esc(id)}",0)">MARK LEGIT</button></div>`}
 async function blockUser(u){if(!confirm('Block '+u+'?'))return;try{await api('/api/blocked',{method:'POST',body:{entity_type:'user',entity_id:u,reason:'manual block from control center'}});toast('USER '+u+' BLOCKED',true)}catch(e){toast(e.message)}}
 async function fb(id,l){try{const r=await api('/api/feedback',{method:'POST',body:{event_id:id,label:l}});toast('Feedback learned (online updates: '+r.online_learned+')')}catch(e){toast(e.message)}}
@@ -302,18 +406,18 @@ async function loadUser(){const el=$('#ubody');if(!el)return;el.innerHTML='<div 
   try{const r=await api('/api/fraud/users/'+encodeURIComponent(S.userId));const d=r.decision,f=r.features||{},p=r.profile||{};
    const ev=(r.events||[]);
    el.innerHTML=`<div class="row-f" style="justify-content:space-between"><div><b class="m" style="font-size:18px">${esc(r.user_id)}</b> ${d?tag(d.level):''} ${r.blocked?tag('BLOCKED'):''}</div>
-    <div class="row-f"><button class="p" id="inv">AI / RULE INVESTIGATION</button>${r.blocked?`<button onclick="unblock("user",'${esc(r.user_id)}')">UNBLOCK</button>`:`<button class="d" onclick="blockUser('${esc(r.user_id)}')"}}>BLOCK</button>`}</div></div>
+    <div class="row-f"><button class="p" id="inv">AI / RULE INVESTIGATION</button>${r.blocked?`<button onclick="unblock("user",'${esc(r.user_id)}')">UNBLOCK</button>`:`<button class="d" onclick="blockUser('${esc(r.user_id)}')">BLOCK</button>`}</div></div>
     <div class="grid g3" style="margin-top:10px"><div class="panel"><h3>PROFILE</h3><div class="body kv"><span>device</span><span class="m">${esc(p.device_id)}</span><span>ip</span><span class="m">${esc(p.ip)}</span><span>country</span><span>${esc(p.country)}</span><span>account age</span><span class="m">${esc(p.account_age_days)}d</span><span>user agent</span><span class="m" style="white-space:normal">${esc(p.user_agent)}</span></div></div>
     <div class="panel"><h3>BEHAVIOR</h3><div class="body kv">${['clicks_1m','clicks_5m','avg_interval','min_interval','unique_ads_1h','unique_ips_per_device','unique_devices_per_ip','repeat_ad_ratio'].map(k=>`<span>${k}</span><span class="m">${f[k]==null?'-':(+f[k]).toFixed(2)}</span>`).join('')}</div></div>
     <div class="panel"><h3>LATEST DECISION</h3><div class="body">${d?`<div class="risk">${(d.risk*100).toFixed(1)}</div>${reasonBlock({reason:d.reason,reason_title:d.reason_title,event_id:d.event_id||d.id,user_id:r.user_id,rules:d.rules})}${factorBars(d.factors)}`:'<span class="muted">n/a</span>'}</div></div></div>
     <div id="invout"></div><div class="panel" style="margin-top:10px"><h3>COORDINATION GRAPH <span class="hint">U user / D device / I ip / S subnet, linked by shared resources</span></h3><canvas id="gc" height="260" style="height:260px"></canvas></div>
-    <div class="panel" style="margin-top:10px"><h3>EVENT TIMELINE</h3><div class="scroll"><table><thead><tr><th>TIME</th><th>AD</th><th>CAMPAIGN</th><th>RISK</th><th>LEVEL</th><th>ACTION</th></tr></thead><tbody>${ev.slice(0,60).map(e=>`<tr class="row" onclick="openEvent('${esc(e.event_id)}')"}}><td class="m">${hms(e.ts)}</td><td class="m">${esc(e.ad_id)}</td><td class="m">${esc(e.campaign_id)}</td><td class="m">${e.risk.toFixed(3)}</td><td>${tag(e.level)}</td><td>${tag(e.action)}</td></tr>`).join('')}</tbody></table></div></div>`;
+    <div class="panel" style="margin-top:10px"><h3>EVENT TIMELINE</h3><div class="scroll"><table><thead><tr><th>TIME</th><th>AD</th><th>CAMPAIGN</th><th>RISK</th><th>LEVEL</th><th>ACTION</th></tr></thead><tbody>${ev.slice(0,60).map(e=>`<tr class="row" onclick="openEvent('${esc(e.event_id)}')"><td class="m">${hms(e.ts)}</td><td class="m">${esc(e.ad_id)}</td><td class="m">${esc(e.campaign_id)}</td><td class="m">${e.risk.toFixed(3)}</td><td>${tag(e.level)}</td><td>${tag(e.action)}</td></tr>`).join('')}</tbody></table></div></div>`;
    $('#inv').onclick=async()=>{$('#invout').innerHTML='<div class="skeleton">investigating...</div>';try{const i=await api('/api/investigate/'+encodeURIComponent(r.user_id),{method:'POST'});
      $('#invout').innerHTML=`<div class="panel" style="margin-top:10px;border-color:#3b3366"><h3><span class="ai">INVESTIGATION REPORT</span><span class="tag ${i.mode==='llm'?'LOW':'MEDIUM'}">${i.mode==='llm'?'LLM AGENT':'RULE-BASED MODE (agent unavailable)'}</span></h3><div class="body"><b>${esc(i.attack_type)}</b> &middot; confidence ${(i.confidence*100).toFixed(0)}%<p>${esc(i.summary)}</p>${i.event_id?`<div class="hint m">Source event: <a href="#/investigation/user/${encodeURIComponent(r.user_id)}" onclick="go('user','${esc(r.user_id)}");return false">${esc(i.event_id)}</a></div>`:''}
       <div class="row-f">Recommendation: ${tag(i.recommendation.toUpperCase())}<button class="d" onclick="decide(${i.recommendation_id},'approve')">APPROVE</button><button onclick="decide(${i.recommendation_id},'reject')">REJECT</button></div><div class="hint">Recommendations never execute without human approval.</div></div></div>`}catch(e){$('#invout').innerHTML=`<div class="empty">${esc(e.message)}</div>`}};
    drawGraph(r.graph)}catch(e){el.innerHTML=`<div class="empty">${esc(e.message)}</div>`}}
 async function decide(id,dc){try{await api(`/api/recommendations/${id}/${dc}`,{method:'POST'});toast('Recommendation '+(dc==='approve'?'approved':'rejected'));loadUser()}catch(e){toast(e.message)}}
-function drawGraph(g){const c=$('#gc');if(!c||!g||!g.nodes.length)return;const W=c.width=c.clientWidth*devicePixelRatio,H=c.height=260*devicePixelRatio,x=c.getContext('2d');
+function drawGraph(g,cid){const c=cid?document.getElementById(cid):$('#gc');if(!c||!g||!g.nodes.length)return;const W=c.width=c.clientWidth*devicePixelRatio,H=c.height=260*devicePixelRatio,x=c.getContext('2d');
   const col={U:'#e0782f',D:'#4aa3d8',I:'#9b87f5',S:'#59636D'},N=g.nodes.map((n,i)=>({...n,x:W/2+Math.cos(i)*W/4,y:H/2+Math.sin(i)*H/4,vx:0,vy:0})),ix=Object.fromEntries(N.map((n,i)=>[n.id,i]));
   for(let it=0;it<180;it++){for(const a of N)for(const b of N){if(a===b)continue;let dx=a.x-b.x,dy=a.y-b.y,d=Math.hypot(dx,dy)||1,f=2200*devicePixelRatio/(d*d);a.vx+=dx/d*f;a.vy+=dy/d*f}
    for(const [s,t] of g.edges){const a=N[ix[s]],b=N[ix[t]];if(!a||!b)continue;let dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy)||1,f=(d-40*devicePixelRatio)*0.02;a.vx+=dx/d*f;a.vy+=dy/d*f;b.vx-=dx/d*f;b.vy-=dy/d*f}
@@ -344,7 +448,7 @@ function vCampaigns(m){m.innerHTML=`<div class="panel"><h3>CAMPAIGN ANALYTICS <s
   $('#cw').onchange=loadCamp;every(loadCamp,5000)}
 async function loadCamp(){const el=$('#cbody');if(!el)return;try{const r=await api('/api/campaigns?since_minutes='+$('#cw').value);el.className='body';
   el.innerHTML=`<div class="kpis" style="grid-template-columns:repeat(4,1fr)"><div class="kpi"><label>CLICKS</label><b>${fmt(r.totals.clicks)}</b></div><div class="kpi"><label>SPEND</label><b>${inr(r.totals.spend)}</b></div><div class="kpi"><label>WASTED ON SUSPICIOUS</label><b style="color:var(--crit)">${inr(r.totals.wasted)}</b></div><div class="kpi"><label>WASTE RATIO</label><b>${r.totals.spend?pct(r.totals.wasted/r.totals.spend,2):'-'}</b></div></div>
-  <table><thead><tr><th>CAMPAIGN</th><th>CLICKS</th><th>VALID</th><th>SUSPICIOUS</th><th>FRAUD RATE</th><th>USERS</th><th>CPC</th><th>SPEND</th><th>WASTED</th></tr></thead>${r.campaigns.map(c=>`<tr class="row" onclick="campDetail('${esc(c.campaign_id)}')"}}><td class="m">${esc(c.campaign_id)}</td><td class="m">${fmt(c.clicks)}</td><td class="m">${fmt(c.valid)}</td><td class="m" style="color:var(--crit)">${fmt(c.suspicious)}</td><td class="m">${pct(c.fraud_rate,2)}</td><td class="m">${fmt(c.users)}</td><td class="m">${inr(c.cpc)}</td><td class="m">${inr(c.spend)}</td><td class="m" style="color:var(--crit)">${inr(c.wasted)}</td></tr>`).join('')||'<tr><td class="empty" colspan="9">No traffic yet. Start a simulation.</td></tr>'}</table>
+  <table><thead><tr><th>CAMPAIGN</th><th>CLICKS</th><th>VALID</th><th>SUSPICIOUS</th><th>FRAUD RATE</th><th>USERS</th><th>CPC</th><th>SPEND</th><th>WASTED</th></tr></thead>${r.campaigns.map(c=>`<tr class="row" onclick="campDetail('${esc(c.campaign_id)}')"><td class="m">${esc(c.campaign_id)}</td><td class="m">${fmt(c.clicks)}</td><td class="m">${fmt(c.valid)}</td><td class="m" style="color:var(--crit)">${fmt(c.suspicious)}</td><td class="m">${pct(c.fraud_rate,2)}</td><td class="m">${fmt(c.users)}</td><td class="m">${inr(c.cpc)}</td><td class="m">${inr(c.spend)}</td><td class="m" style="color:var(--crit)">${inr(c.wasted)}</td></tr>`).join('')||'<tr><td class="empty" colspan="9">No traffic yet. Start a simulation.</td></tr>'}</table>
   <div class="hint" style="margin-top:6px">${esc(r.note)}. Cost per click is configured in configs/config.yaml (campaigns.cpc). Click a row for details.</div>`}catch(e){el.innerHTML=`<div class="empty">${esc(e.message)}</div>`}}
 async function campDetail(id){const el=$('#cdet');el.innerHTML='<div class="skeleton">loading...</div>';try{const d=await api(`/api/campaigns/${encodeURIComponent(id)}?since_minutes=${$('#cw').value}`);
   const t=(rows,title)=>`<div class="panel"><h3>${title}</h3><table>${rows.map(r=>`<tr><td class="m">${esc(r.k)}</td><td class="m">${fmt(r.n)}</td><td class="m" style="color:var(--crit)">${fmt(r.flagged||0)}</td></tr>`).join('')||'<tr><td class="empty">none</td></tr>'}</table></div>`;
@@ -388,19 +492,69 @@ async function unblock(t,i){if(!confirm('Manually unblock '+i+'? This re-admits 
 function vAlerts(m){m.innerHTML=`<div class="panel"><h3>ALERT CENTER <span class="row-f"><select id="as"><option value="">all</option><option>open</option><option>acknowledged</option><option>resolved</option></select><button class="d" onclick="clearScope('alerts')">CLEAR ALERTS</button></span></h3><div id="abody2" class="skeleton">loading...</div></div>`;$('#as').onchange=loadAl;every(loadAl,4000)}
 async function loadAl(){const el=$('#abody2');if(!el)return;try{const r=await api('/api/alerts'+($('#as').value?'?status='+$('#as').value:''));el.className='';
   el.innerHTML=r.length?r.map(a=>`<div style="padding:8px 12px;border-top:1px solid var(--bd)">${tag(a.severity)} <b>${esc(a.title)}</b> <span class="hint m">${hms(a.ts)} | ${esc(a.status)}</span>
-   ${reasonBlock(a.details,a.id,a.user_id)}<div class="row-f" style="margin-top:4px"><button onclick="setAl(${a.id},'acknowledged')">ACK</button><button onclick="setAl(${a.id},'resolved')">RESOLVE</button>${a.user_id?`<button onclick="go('user','${esc(a.user_id)}')"}}>INVESTIGATE</button>`:''}</div></div>`).join(''):'<div class="empty">NO ACTIVE FRAUD ALERTS<br><span class="hint">No critical threats detected.</span></div>'}catch(e){el.innerHTML=`<div class="empty">${esc(e.message)}</div>`}}
+   ${reasonBlock(a.details,a.id,a.user_id)}<div class="row-f" style="margin-top:4px"><button onclick="openAlertDetail(${a.id})">DETAILS</button><button onclick="setAl(${a.id},'acknowledged')">ACK</button><button onclick="setAl(${a.id},'resolved')">RESOLVE</button>${a.user_id?`<button onclick="go('user','${esc(a.user_id)}')">INVESTIGATE</button>`:''}</div></div>`).join(''):'<div class="empty">NO ACTIVE FRAUD ALERTS<br><span class="hint">No critical threats detected.</span></div>'}catch(e){el.innerHTML=`<div class="empty">${esc(e.message)}</div>`}}
 /* Blocklist cell: the stored plain-English reason, with the raw rule reason kept as a tooltip. */
 function whyCell(b){const rd=b.reason_detail||{};const txt=rd.reason||'';
  const main=txt?esc(txt):`<span class="hint">${esc(b.reason)}</span>`;
- const eid=rd.event_id?`<div class="row-f" style="margin-top:2px"><button onclick="openEvent('${esc(rd.event_id)}')"}}>VIEW EVENT</button>${rd.rules&&rd.rules.length?`<span class="hint m">${esc(rd.rules.join(', '))}</span>`:''}</div>`:'';
+ const eid=rd.event_id?`<div class="row-f" style="margin-top:2px"><button onclick="openEvent('${esc(rd.event_id)}')">VIEW EVENT</button>${rd.rules&&rd.rules.length?`<span class="hint m">${esc(rd.rules.join(', '))}</span>`:''}</div>`:'';
  return `<span title="${esc(b.reason)}">${main}</span>${eid}`}
 /* The same plain-English reason the engine stored at decision time, with a link into the evidence. */
 function reasonBlock(det,alert_id,user_id){const d=det||{},rd=d.reason_detail||{};if(alert_id)d.alert_id=alert_id;if(user_id)d.user_id=d.user_id||user_id;
  const txt=esc(d.reason||rd.reason||'No reason recorded for this alert.');
  const eid=esc(rd.event_id||d.event_id||'');const uid=esc(d.user_id||rd.user_id||'');const aid=d.alert_id?esc(d.alert_id):'';
  return `<div style="margin-top:4px"><b>Why:</b> ${txt}${rd.title?` <span class="hint m">(${esc(rd.title)})</span>`:''}</div>`+
-  `<div class="row-f" style="margin-top:4px">${eid?`<button onclick="openEvent('${eid}')"}}>VIEW EVENT ${esc(eid.slice(0,10))}</button>`:''}${uid?`<button onclick="go('user','${uid}')"}}>INVESTIGATE USER</button>`:''}${d.alert_id?`<button onclick="investigateAlert('${esc(d.alert_id)}')"}}>WHY THIS ALERT</button>`:''}${rd.rules&&rd.rules.length?`<span class="hint m">rules: ${esc(rd.rules.join(', '))}</span>`:''}</div>`}
+  `<div class="row-f" style="margin-top:4px">${eid?`<button onclick="openEvent('${eid}')">VIEW EVENT ${esc(eid.slice(0,10))}</button>`:''}${uid?`<button onclick="go('user','${uid}')">INVESTIGATE USER</button>`:''}${d.alert_id?`<button onclick="investigateAlert('${esc(d.alert_id)}')">WHY THIS ALERT</button>`:''}${rd.rules&&rd.rules.length?`<span class="hint m">rules: ${esc(rd.rules.join(', '))}</span>`:''}</div>`}
 async function setAl(id,st){try{await api(`/api/alerts/${id}/status`,{method:'POST',body:{status:st}});loadAl()}catch(e){toast(e.message)}}
+window.clearScope=async(s)=>{if(!confirm('Clear '+s+'?'))return;var scope=s;try{await api('/api/admin/reset',{method:'POST',body:{scopes:[scope],confirm:true}});toast(s+' cleared');render()}catch(e){toast(e.message,true)}}
+async function openAlertDetail(id){
+  var d=document.getElementById('drawer'); d.classList.add('open'); d.innerHTML='<div class="skeleton">loading...</div>';
+  try{
+    var alerts=await api('/api/alerts?limit=500');
+    var a=alerts.find(function(x){return String(x.id)===String(id);})||{};
+    var det=a.details||{}; var rd=det.reason_detail||{};
+    var scores=rd.scores||det.scores||{};
+    var factors=rd.factors||det.factors||[];
+    var bar=function(l,v){ if(v==null) return '<div class="row-f" style="margin:3px 0"><span style="width:90px" class="muted">'+l+'</span><span class="muted">n/a</span></div>'; return '<div class="row-f" style="margin:3px 0"><span style="width:90px" class="muted">'+l+'</span><div class="bar" style="flex:1"><i style="width:'+(v*100)+'%"></i></div><span class="m" style="width:50px;text-align:right">'+(+v).toFixed(3)+'</span></div>'; };
+    var html='<div class="row-f" style="justify-content:space-between"><b class="m">'+esc(a.title||('Alert '+id))+'</b><button onclick="closeDrawer()">Esc</button></div>';
+    html+='<div>'+tag(a.severity)+' '+tag(a.status)+' <span class="hint m">'+hms(a.ts)+'</span></div>';
+    html+='<div class="risk" style="color:var(--'+(LC[a.severity]||'tx')+'))">'+(((det.risk||0)*100).toFixed(1))+'</div>';
+    html+='<h4>WHY THIS IS AN ALERT</h4><div>'+esc(det.reason||rd.reason||'No reason recorded.')+'</div>';
+    if(rd.title) html+='<div class="hint m" style="margin-top:4px">Classification: '+esc(rd.title)+'</div>';
+    if(rd.level) html+='<div class="hint m">Level: '+esc(rd.level)+' | Rules: '+esc((rd.rules||det.rules||[]).join(', ')||'none')+'</div>';
+    html+='<h4>MODEL SCORES</h4>'+bar('Rules',scores.rules)+bar('ML',scores.ml)+bar('Online',scores.online)+bar('Anomaly',scores.anomaly)+bar('Graph',scores.graph);
+    html+='<h4>TOP FACTORS</h4>'+factorBars(factors);
+    html+='<h4>DETAILS</h4><div class="kv"><span>user</span><span class="m">'+esc(a.user_id)+'</span><span>campaign</span><span class="m">'+esc(a.campaign_id)+'</span><span>event</span><span class="m">'+esc(rd.event_id||det.event_id)+'</span></div>';
+    html+='<canvas id="agc" height="220" style="height:220px;width:100%;margin-top:8px"></canvas>';
+    html+='<div class="row-f" style="margin-top:8px">';
+    if(a.user_id) html+='<button onclick="go(\'user\',\''+esc(a.user_id)+'\')">INVESTIGATE USER</button>';
+    var eid=rd.event_id||det.event_id;
+    if(eid) html+='<button onclick="openEvent(\''+esc(eid)+'\')">VIEW EVENT</button>';
+    html+='</div>';
+    d.innerHTML=html;
+    if(a.user_id){
+      try{var u=await api('/api/fraud/users/'+encodeURIComponent(a.user_id));
+        if(u.graph&&u.graph.nodes&&u.graph.nodes.length){setTimeout(function(){drawGraph(u.graph,'agc');},80);}
+        var p=u.profile||{}; var f=u.features||{};
+        var info='<h4>USER INFO</h4><table style="width:100%;font-size:12px"><tr><td>user</td><td class="m">'+esc(u.user_id)+'</td></tr><tr><td>device</td><td class="m">'+esc(p.device_id)+'</td></tr><tr><td>ip</td><td class="m">'+esc(p.ip)+'</td></tr><tr><td>country</td><td>'+esc(p.country)+'</td></tr><tr><td>account age</td><td class="m">'+esc(p.account_age_days)+'d</td></tr></table>';
+        info+='<h4>BEHAVIOR</h4><table style="width:100%;font-size:12px">'+['clicks_1m','clicks_5m','avg_interval','min_interval','unique_ads_1h','unique_ips_per_device','unique_devices_per_ip','repeat_ad_ratio'].map(function(k){return '<tr><td>'+k+'</td><td class="m">'+(f[k]==null?'-':(+f[k]).toFixed(2))+'</td></tr>';}).join('')+'</table>';
+        var sorted=factors.slice().sort(function(x,y){return (y.contribution||0)-(x.contribution||0);});
+        info+='<h4>ORDERED REASONS</h4><ol>'+sorted.map(function(x){return '<li>'+esc(x.label||x.feature)+': '+esc(String(x.value))+' (typical '+esc(String(x.typical))+') contrib '+((x.contribution||0)>0?'+':'')+(x.contribution||0).toFixed(3)+'</li>';}).join('')+'</ol>';
+        info+='<h4>SCORE OVERLAY</h4><canvas id="scoreOverlay" height="120" style="height:120px;width:100%"></canvas>';
+        var d2=document.getElementById('drawer');
+        d2.innerHTML=d2.innerHTML+'<div style="margin-top:8px">'+info+'</div>';
+        setTimeout(function(){
+          var c=document.getElementById('scoreOverlay'); if(!c) return;
+          var ctx=c.getContext('2d'); var w=c.width=c.clientWidth*devicePixelRatio; var h=c.height=120*devicePixelRatio;
+          ctx.clearRect(0,0,w,h);
+          var keys=['Rules','ML','Online','Anomaly','Graph']; var vals=[scores.rules||0,scores.ml||0,scores.online||0,scores.anomaly||0,scores.graph||0];
+          var bw=w/keys.length*0.6; var gap=w/keys.length;
+          var cols=['#d4a23a','#9b87f5','#4aa3d8','#e0782f','#e5484d'];
+          for(var i=0;i<keys.length;i++){ var x=i*gap+(gap-bw)/2; var bh=h*vals[i]*0.8; ctx.fillStyle=cols[i]; ctx.fillRect(x,h-bh,bw,bh); ctx.fillStyle='#89939E'; ctx.font=(9*devicePixelRatio)+'px monospace'; ctx.fillText(keys[i],x,h-2); }
+        },120);
+      }catch(e){}
+    }
+  }catch(e){d.innerHTML='<div class="empty">'+esc(e.message)+'</div>';}
+}
 
 /* ---------------- Rules ---------------- */
 const RULE_NUM=[['max_clicks_per_min','Max clicks / minute',1],['min_interval_s','Min click interval (s)',0.05],['min_interval_clicks','Clicks needed for interval rule',1],['max_users_per_device','Max users per device',1],['max_devices_per_ip','Max devices per IP',1],['repeat_ad_ratio','Repeat-ad ratio (0-1)',0.05],['repeat_ad_min_clicks','Repeat-ad min clicks',1]];
@@ -415,9 +569,7 @@ function vRules(m){m.innerHTML='<div id="rbody" class="skeleton">loading...</div
     try{await api('/api/rules',{method:'PUT',body:b});$('#rmsg').textContent='applied';toast('Rules updated')}catch(e){$('#rmsg').textContent=e.message}}})}
 
 /* ---------------- Settings ---------------- */
-function vSettings(m){m.innerHTML='<div id="sbody" class="skeleton">loading...</div>';safe($('#sbody'),async()=>{
-  let ai=null;const sys=await api('/api/settings/system');try{ai=await api('/api/settings/ai')}catch{}
-  $('#sbody').className='';$('#sbody').innerHTML=`<div class="grid g22"><div class="panel"><h3><span class="ai">AI CONFIGURATION</span><span class="hint">admin only</span></h3><div class="body">${ai?`
+function vSettings(m){m.innerHTML='<div class="row-f" style="margin-bottom:10px;gap:6px"><button onclick="go(\'settings\')">System &amp; AI</button><button onclick="go(\'models\')">Models</button><button onclick="go(\'pipeline\')">Pipeline</button><button onclick="go(\'rules\')">Rules</button><button onclick="go(\'datarst\')">Data &amp; Reset</button></div><div id="sbody" class="skeleton">loading...</div>';safe($('#sbody'),async()=>{let ai=null;const sys=await api('/api/settings/system');try{ai=await api('/api/settings/ai')}catch(e){ai=null}$('#sbody').className='';$('#sbody').innerHTML=`<div class="grid g22"><div class="panel"><h3><span class="ai">AI CONFIGURATION</span><span class="hint">admin only</span></h3><div class="body">${ai?`
    <div class="hint">Agent status: ${esc(ai.status.state)} - ${esc(ai.status.detail)}. The agent is optional: without a key the platform uses rule-based explanations.</div>
    <label class="f">LLM PROVIDER</label><select id="sp">${['disabled','grok','openai','claude','ollama'].map(p=>`<option ${ai.provider===p?'selected':''}>${p}</option>`).join('')}</select>
    <label class="f">API KEY ${ai.has_key?'(stored encrypted - leave blank to keep)':''}</label><input id="sk" type="password" autocomplete="off" placeholder="${ai.has_key?'********':'paste key'}" style="width:100%">
@@ -451,7 +603,7 @@ const every=(fn,ms)=>{fn();S.timers.push(setInterval(fn,ms))};
 const NAV_OF={incident:'incidents',target:'analytics'};
 
 // ---------- View dispatcher ----------
-const VIEW_FN={cmd:vCmd,user:vUser,analytics:vAnalytics,campaigns:vCampaigns,models:vModels,
+const VIEW_FN={start:vStart,cmd:vCmd,user:vUser,analytics:vAnalytics,campaigns:vCampaigns,models:vModels,incidents:vIncidents,incident:vIncident,target:vTarget,logs:vLogs,patterns:vPatterns,saved:vSaved,search:vSearch,datarst:vDataRst,
                pipeline:vPipeline,blocklist:vBlocklist,alerts:vAlerts,rules:vRules,settings:vSettings};
 function render(){const m=$('#main'),fn=VIEW_FN[S.view];
   if(!fn){m.innerHTML='<div class="empty">This page is not built yet: '+esc(S.view)+'</div>';return}
@@ -495,11 +647,11 @@ function openPalette(){$('#palette').classList.add('on');$('#pin').value='';fill
 function closePalette(){$('#palette').classList.remove('on')}
 
 // ---------- Auth callback ----------
-window.onAuthed=()=>{$('#who').textContent=Auth.email+' ['+Auth.role+']';
-  S.ws&&S.ws.close();
-  S.ws=connectWS(onMsg,ok=>{if(!ok)$('#foot').textContent='websocket reconnecting...'});
-  if(!location.hash)location.hash='#/start';
-  onRoute()};
+window.onAuthed=()=>{
+  try{$('#who').textContent=Auth.email+' ['+Auth.role+']'}catch(e){}
+  try{if(!location.hash)location.hash='#/command'; onRoute()}catch(e){const m=$('#main');if(m)m.innerHTML='<div class="empty">ERROR: '+esc(e.message)+'</div>'}
+  try{S.ws&&S.ws.close(); S.ws=connectWS(onMsg,ok=>{if(!ok)$('#foot').textContent='websocket reconnecting...'})}catch(e){$('#foot').textContent='websocket unavailable: '+e.message}
+};
 
 // ---------- Keyboard shortcuts ----------
 addEventListener('keydown',e=>{

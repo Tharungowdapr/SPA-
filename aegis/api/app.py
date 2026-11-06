@@ -284,6 +284,8 @@ def create_app(settings: Settings | None = None, bundle: Any = "auto", pool_seed
                    "connect-src 'self'; worker-src blob:")
         resp.headers.update({"X-Content-Type-Options": "nosniff", "X-Frame-Options": "DENY",
                              "Referrer-Policy": "no-referrer", "Content-Security-Policy": csp})
+        if request.url.path in ("/", "/sim") or request.url.path.startswith("/static/"):
+            resp.headers["Cache-Control"] = "no-store, must-revalidate"
         return resp
 
     # ------------------------------------------------------------------ auth
